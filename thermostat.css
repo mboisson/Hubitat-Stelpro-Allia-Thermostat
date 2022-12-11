@@ -1,0 +1,21 @@
+.thermostat div.w-full.my-1{visibility:hidden;height:0px}
+.thermostat div.p-1{text-align:left}
+.thermostat div.p-1 small::before {content:" C"}
+.thermostat div.p-1 span {visibility:hidden;}
+.thermostat div.p-1::before {content:"T:"}
+.thermostat div.heating div.inline-block {
+    //border: solid 2px blue;
+    width: 40px;
+    overflow: hidden;
+    height: 1.5em;
+    line-height: 1.4em;
+    font-size: 18px !important;
+}
+
+.thermostat {z-index:100}
+
+.power div.tile-primary {text-align:right; position:absolute; top:0; font-size:14px !important;  }
+.power div.tile-primary::before {content:" "  }
+.power div.tile-primary::after {content:"W  "  }
+.power div.tile-title {visibility:hidden}
+.power {background-color:rgba(0, 0, 0, 0.0); opacity:1}
