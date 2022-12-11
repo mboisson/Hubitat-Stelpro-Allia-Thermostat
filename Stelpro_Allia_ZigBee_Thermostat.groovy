@@ -299,7 +299,46 @@ def setHeatingSetpoint(preciseDegrees) {
         zigbee.writeAttribute(0x201, 0x0012, 0x29, celsius100) //Write Heat Setpoint 
     }
 }
+def increaseHeatSetpoint() {
+    def currentSetpoint = device.currentValue("heatingSetpoint")
+    def locationScale = getTemperatureScale()
+    def maxSetpoint
+    def step
 
+    if (locationScale == "C") {
+        maxSetpoint = 30;
+        step = 0.5
+    }
+    else {
+        maxSetpoint = 86
+        step = 1
+    }
+
+    if (currentSetpoint < maxSetpoint) {
+        currentSetpoint = currentSetpoint + step
+        setHeatingSetpoint(currentSetpoint)
+    }   
+}
+def decreaseHeatSetpoint() {
+    def currentSetpoint = device.currentValue("heatingSetpoint")
+    def locationScale = getTemperatureScale()
+    def maxSetpoint
+    def step
+
+    if (locationScale == "C") {
+        minSetpoint = 5;
+        step = 0.5
+    }
+    else {
+        minSetpoint = 41
+        step = 1
+    }
+
+    if (currentSetpoint > minSetpoint) {
+        currentSetpoint = currentSetpoint - step
+        setHeatingSetpoint(currentSetpoint)
+    }
+}
 def setOutdoorTemperature(preciseDegrees) {
     if (preciseDegrees != null) {
         def temperatureScale = getTemperatureScale()
