@@ -182,8 +182,8 @@ def refresh() {
     cmds += zigbee.readAttribute(0x204, 0x0001) //Read Keypad Lockout
     
     cmds += zigbee.readAttribute(0x201, 0x4001) // Outdoor temperature
-    cmds += zigbee.readAttribute(0x201, 0x4002) // unknown
-    cmds += zigbee.readAttribute(0x201, 0x4004) // unknown
+//    cmds += zigbee.readAttribute(0x201, 0x4002) // unknown
+//    cmds += zigbee.readAttribute(0x201, 0x4004) // unknown
     cmds += zigbee.readAttribute(0x201, 0x4008) // power
     cmds += zigbee.readAttribute(0x201, 0x4009) // energy
     logDebug "refresh cmds:${cmds}"
