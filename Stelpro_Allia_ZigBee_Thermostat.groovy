@@ -319,9 +319,12 @@ def fanOn(){
 def setSchedule(JSON_OBJECT){
     log.info "setSchedule is not available for this device"
 }
-
-def setThermostatFanMode(fanmode){
-    log.info "setThermostatFanMode is not available for this device"
+def setThermostatMode(mode) {
+     sendEvent(name:"thermostatMode", value:mode)
+}
+def setThermostatOperatingState(state) {
+    if (state == "on") { state = "idle" }
+     sendEvent(name:"thermostatOperatingState", value:state)
 }
 
 def setHeatingSetpoint(preciseDegrees) {
