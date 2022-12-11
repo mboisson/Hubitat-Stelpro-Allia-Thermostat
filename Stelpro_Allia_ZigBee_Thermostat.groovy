@@ -31,7 +31,10 @@ metadata {
         capability "Configuration"
         capability "TemperatureMeasurement"
         capability "ThermostatHeatingSetpoint"
-        //capability "Thermostat"
+        capability "ThermostatOperatingState"
+        //capability "ThermostatSetpoint"
+        capability "ThermostatMode"
+        capability "Thermostat"
         capability "Refresh"
         capability "PowerMeter"
         capability "EnergyMeter"
@@ -285,7 +288,6 @@ def setThermostatOperatingState(state) {
     if (state == "on") { state = "idle" }
      sendEvent(name:"thermostatOperatingState", value:state)
 }
-
 def setHeatingSetpoint(preciseDegrees) {
     if (preciseDegrees != null) {
         def temperatureScale = getTemperatureScale()
