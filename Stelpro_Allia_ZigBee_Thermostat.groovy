@@ -50,6 +50,12 @@ metadata {
         // 0x0B04 (2820): Electrical Measurement
         
         command "setOutdoorTemperature", [[name:"Temperature", type:"NUMBER"]]
+        command "setThermostatMode", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["heat"]]]
+        command "setThermostatOperatingState", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["heating","idle"]]]
+//        command "setThermostatFanMode", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["off"]]]
+
+        command "increaseHeatSetpoint"
+        command "decreaseHeatSetpoint"
     }
     
     preferences {
@@ -100,7 +106,7 @@ def parse(String description) {
         else if (descMap.cluster == "0201" && descMap.attrId == "0008") {
             logDebug "HEAT DEMAND"
             map.name = "thermostatOperatingState"
-            map.value = getModeMap()[descMap.value]
+            //map.value = getModeMap()[descMap.value]
             if (descMap.value < "10") {
                 map.value = "idle"
             }
