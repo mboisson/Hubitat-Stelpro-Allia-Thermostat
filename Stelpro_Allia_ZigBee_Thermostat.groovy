@@ -353,29 +353,6 @@ def setOutdoorTemperature(preciseDegrees) {
     }
 }
 
-def setCoolingSetpoint(degrees) {
-    log.info "setCoolingSetpoint is not available for this device"
-}
-
-def setThermostatMode(String value) {
-    logDebug "setThermostatMode({$value})"
-    def currentMode = device.currentState("thermostatMode")?.value
-    def lastTriedMode = state.lastTriedMode ?: currentMode ?: "heat"
-    def modeNumber;
-    Integer setpointModeNumber;
-    def modeToSendInString;
-    switch (value) {
-        case "heat":
-        case "emergency heat":
-        case "auto":
-            return heat()
-        
-        case "cool":        
-        default:
-            return off()
-    }
-}
-
 def updated() {
     parameterSetting()
 }
