@@ -201,10 +201,11 @@ def configure(){
     logDebug "binding to Thermostat cluster"
     
     // Set unused default values (for Google Home Integration)
-    //sendEvent(name: "coolingSetpoint", value:getTemperature("0BB8")) // 0x0BB8 =  30 Celsius
-    //sendEvent(name: "thermostatFanMode", value:"auto")
-    //updateDataValue("lastRunningMode", "heat") // heat is the only compatible mode for this device
-    
+    sendEvent(name: "coolingSetpoint", value:getTemperature("0BB8")) // 0x0BB8 =  30 Celsius
+    sendEvent(name: "thermostatFanMode", value:"auto")
+    setThermostatMode("heat")
+    sendEvent(name: "supportedThermostatModes", value:"heat,idle")
+    sendEvent(name: "supportedThermostatFanModes", value:"")
     def cmds = [
     //bindings
         "zdo bind 0x${device.deviceNetworkId} 1 0x019 0x201 {${device.zigbeeId}} {}", "delay 200",
