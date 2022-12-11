@@ -275,47 +275,6 @@ def getTemperature(value) {
 def getTemperatureScale() {
     return "${location.temperatureScale}"
 }
-
-def off() {
-    logDebug "off"
-    zigbee.writeAttribute(0x201, 0x001C, 0x30, 0)
-}
-
-def heat() {
-    logDebug "heat"
-    
-    def cmds = []
-    cmds += zigbee.writeAttribute(0x201, 0x001C, 0x30, 04, [:], 1000) // MODE    
-    return cmds
-}
-
-def cool() {
-    log.info "cool mode is not available for this device. => Defaulting to off instead."
-    off()
-}
-
-def auto() {
-    log.info "auto mode is not available for this device. => Defaulting to heat mode instead."
-    heat()
-}
-
-def emergencyHeat() {
-    log.info "emergencyHeat mode is not available for this device. => Defaulting to heat mode instead."
-    heat()
-}
-
-def fanAuto() {
-    log.info "fanAuto mode is not available for this device"
-}
-
-def fanCirculate(){
-    log.info "fanCirculate mode is not available for this device"
-}
-
-def fanOn(){
-    log.info "fanOn mode is not available for this device"
-}
-
 def setSchedule(JSON_OBJECT){
     log.info "setSchedule is not available for this device"
 }
@@ -408,6 +367,19 @@ def parameterSetting() {
     else {
         log.info "nothing valid"
     }
+}
+
+// required useless functions
+def auto() {}
+def cool() {}
+def emergencyHeat() {}
+def fanAuto() {}
+def fanCirculate() {}
+def fanOn() {}
+def heat() { setHeatingSetpoint(device.currentValue("temperature")+0.5) }
+def off() { setHeatingSetpoint(5) }
+def setThermostatFanMode(mode) {
+     sendEvent(name:"thermostatFanMode", "off")
 }
 
 
