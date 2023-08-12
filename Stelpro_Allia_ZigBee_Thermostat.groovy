@@ -38,6 +38,7 @@ metadata {
         capability "Refresh"
         capability "PowerMeter"
         capability "EnergyMeter"
+        //capability "SwitchLevel"
 
         fingerprint profileId: "0104", endpointId: "19", inClusters: "0000,0003,0004,0201,0204", outClusters: "0003,000A,0402"
         attribute "temperature_display_mode", "string"
@@ -65,6 +66,9 @@ metadata {
 //        input("lock", "enum", title: "Do you want to lock your thermostat's physical keypad?", options: ["No", "Yes"], defaultValue: "No", required: false, displayDuringSetup: false)
 //        input("country", "enum", title: "Country (Outdoor Temperature)", options: ["Canada", "United States"], defaultValue: "Canada", required: false, displayDuringSetup: true)
 //        input("zipcode", "text", title: "ZipCode (Outdoor Temperature)", description: "[Do not use space](Blank = No Forecast)")
+        input name: "tempChange", type: "number", title: "Temperature change", description: "Minumum change of temperature reading to trigger report in Celsius/100, 10..200", range: "10..200", defaultValue: 100
+        input name: "powerReport", type: "number", title: "Power change", description: "Amount of wattage difference to trigger power report (1..*)",  range: "1..*", defaultValue: 30
+        input name: "reportingSeconds", type: "enum", title: "Status reporting", description: "Maximum time to report status even if no change", options:[0: "never", 60: "1 minute", 600:"10 minutes", 3600:"1 hour", 21600:"6 hours", 43200:"12 hours", 86400:"24 hours"], defaultValue: "60", multiple: false, required: true
         input name: "logEnable", type: "bool", title: "Enable debug logging", defaultValue: true
     }
 }
@@ -202,6 +206,15 @@ def configure(){
     log.warn "configure..."
     runIn(1800,logsOff)    
     logDebug "binding to Thermostat cluster"
+
+    // Configure Default values if null
+    if (tempChange == null)
+        tempChange = 100 as int
+    if (powerReport == null)
+        powerReport = 30 as int
+    if (reportingSeconds == null)
+        reportingSeconds = "60"
+
     
     // Set unused default values (for Google Home Integration)
     sendEvent(name: "coolingSetpoint", value:getTemperature("0BB8")) // 0x0BB8 =  30 Celsius
@@ -215,15 +228,15 @@ def configure(){
 //        "zdo bind 0x${device.deviceNetworkId} 1 0x0F2 0x0021 {${device.zigbeeId}} {}", "delay 200"
         ]
     
-    //reporting
-    cmds += zigbee.configureReporting(0x201, 0x0000, 0x29, 10, 60, 50)   //Attribute ID 0x0000 = local temperature, Data Type: S16BIT
+    //reporting 
+    cmds += zigbee.configureReporting(0x201, 0x0000, 0x29, 10, Integer.parseInt(reportingSeconds), (int) tempChange)   //Attribute ID 0x0000 = local temperature, Data Type: S16BIT
     cmds += zigbee.configureReporting(0x201, 0x0008, 0x20, 10, 900, 5)   //Attribute ID 0x0008 = pi heating demand, Data Type: U8BIT
-    cmds += zigbee.configureReporting(0x201, 0x0012, 0x29, 1, 0, 50)     //Attribute ID 0x0012 = occupied heat setpoint, Data Type: S16BIT
-    cmds += zigbee.configureReporting(0x201, 0x4008, 0x29, 1, 0, 50)     //Attribute ID 0x4008 = power usage, Data Type: S16BIT
-    cmds += zigbee.configureReporting(0x201, 0x4009, 0x29, 1, 0, 50)     //Attribute ID 0x4009 = energy usage, Data Type: S16BIT
+    cmds += zigbee.configureReporting(0x201, 0x0012, 0x29, 10, 60, 1)     //Attribute ID 0x0012 = occupied heat setpoint, Data Type: S16BIT
+    cmds += zigbee.configureReporting(0x201, 0x4008, 0x29, 10, Integer.parseInt(reportingSeconds), (int) powerReport)     //Attribute ID 0x4008 = power usage, Data Type: S16BIT
+    cmds += zigbee.configureReporting(0x201, 0x4009, 0x29, 10, Integer.parseInt(reportingSeconds), 10)     //Attribute ID 0x4009 = energy usage, Data Type: S16BIT
     
-    cmds += zigbee.configureReporting(0x204, 0x0000, 0x30, 1, 0)         //Attribute ID 0x0000 = temperature display mode, Data Type: 8 bits enum
-    cmds += zigbee.configureReporting(0x204, 0x0001, 0x30, 1, 0)         //Attribute ID 0x0001 = keypad lockout, Data Type: 8 bits enum
+    cmds += zigbee.configureReporting(0x204, 0x0000, 0x30, 10, 900)         //Attribute ID 0x0000 = temperature display mode, Data Type: 8 bits enum
+    cmds += zigbee.configureReporting(0x204, 0x0001, 0x30, 10, 900)         //Attribute ID 0x0001 = keypad lockout, Data Type: 8 bits enum
     logDebug "cmds:${cmds}"
     return cmds + refresh()
 }
