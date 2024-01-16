@@ -1,0 +1,17 @@
+{
+  "packageName": "Stelpro Allia Zigbee Thermostat",
+  "author": "Maxime Boissonneault",
+  "version": "1.0",
+  "minimumHEVersion": "2.3.4",
+  "dateReleased": "2022-12-22",
+  "licenseFile": "https://raw.githubusercontent.com/mboisson/Hubitat-Stelpro-Allia-Thermostat/main/LICENSE",
+  "drivers": [
+    {
+      "id": "c20877cc-a3c5-47c1-a4e6-df35ac028d6b",
+      "name": "Stelpro Allia ZigBee Thermostat",
+      "namespace": "Mboisson",
+      "location": "https://raw.githubusercontent.com/mboisson/Hubitat-Stelpro-Allia-Thermostat/main/Stelpro_Allia_ZigBee_Thermostat.groovy",
+      "required": true
+    }
+  ]
+}
