@@ -26,6 +26,8 @@
  *  Date: 2022-12-06
  */
 
+import groovy.transform.Field
+
 metadata {
     definition (name: "Stelpro Allia ZigBee Thermostat", namespace: "Mboisson", author: "Mboisson") {
         capability "Configuration"
@@ -69,6 +71,10 @@ metadata {
         input name: "tempChange", type: "number", title: "Temperature change", description: "Minumum change of temperature reading to trigger report in Celsius/100, 10..200", range: "10..200", defaultValue: 100
         input name: "powerReport", type: "number", title: "Power change", description: "Amount of wattage difference to trigger power report (1..*)",  range: "1..*", defaultValue: 30
         input name: "reportingSeconds", type: "enum", title: "Status reporting", description: "Maximum time to report status even if no change", options:[0: "never", 60: "1 minute", 600:"10 minutes", 3600:"1 hour", 21600:"6 hours", 43200:"12 hours", 86400:"24 hours"], defaultValue: "60", multiple: false, required: true
+        input name: 'refreshScheduleHeating', type: 'enum', title: '<b>Refresh Interval while heating</b>', options: RefreshIntervalOpts.options, defaultValue: RefreshIntervalOpts.defaultValueHeating, description:\
+            '<i>Changes how often the hub calls a refresh while the thermostat is in heating mode.</i>'
+        input name: 'refreshScheduleIdle', type: 'enum', title: '<b>Refresh Interval while idle</b>', options: RefreshIntervalOpts.options, defaultValue: RefreshIntervalOpts.defaultValueIdle, description:\
+            '<i>Changes how often the hub calls a refresh while the thermostat is in idle mode.</i>'
         input name: "logEnable", type: "bool", title: "Enable debug logging", defaultValue: true
     }
 }
@@ -116,9 +122,21 @@ def parse(String description) {
             //map.value = getModeMap()[descMap.value]
             if (descMap.value < "10") {
                 map.value = "idle"
+                final int interval = (settings.refreshScheduleIdle as Integer) ?: 0
+                if (interval > 0 && map.value != device.currentValue("thermostatOperatingState")) {
+                    log.info "${device} scheduling refresh every ${interval} minutes"
+                    runIn(5, 'refresh')
+                    scheduleRefresh(interval)
+                }
             }
             else {
                 map.value = "heating"
+                final int interval = (settings.refreshScheduleHeating as Integer) ?: 0
+                if (interval > 0 && map.value != device.currentValue("thermostatOperatingState")) {
+                    log.info "${device} scheduling refresh every ${interval} minutes"
+                    runIn(5, 'refresh')
+                    scheduleRefresh(interval)
+                }
             }
             sendEvent(name:"thermostatOperatingState", value:map.value)
         }
@@ -172,6 +190,18 @@ def parse(String description) {
     return result
 }
 
+/**
+ * Schedule a refresh
+ * @param intervalMin interval in minutes
+ */
+private void scheduleRefresh(final int intervalMin) {
+    final Random rnd = new Random()
+    unschedule('refresh')
+    log.info "${rnd.nextInt(59)} */${intervalMin} * ? * * *"
+    schedule("${rnd.nextInt(59)} */${intervalMin} * ? * * *", 'refresh')
+}
+
+
 def logsOff(){
    log.warn "debug logging disabled..."
    device.updateSetting("logEnable",[value:"false",type:"bool"])
@@ -196,7 +226,7 @@ def refresh() {
     logDebug "refresh cmds:${cmds}"
 
     return cmds
-}    
+}
 
 def logDebug(value){
     if (logEnable) log.debug(value)
@@ -204,6 +234,7 @@ def logDebug(value){
 
 def configure(){    
     log.warn "configure..."
+    unschedule()
     runIn(1800,logsOff)    
     logDebug "binding to Thermostat cluster"
 
@@ -291,9 +322,9 @@ def getTemperature(value) {
 def getTemperatureScale() {
     return "${location.temperatureScale}"
 }
-def setSchedule(JSON_OBJECT){
-    log.info "setSchedule is not available for this device"
-}
+//def setSchedule(JSON_OBJECT){
+//    log.info "setSchedule is not available for this device"
+//}
 def setThermostatMode(mode) {
      sendEvent(name:"thermostatMode", value:mode)
 }
@@ -415,3 +446,8 @@ def setThermostatFanMode(mode) {
 
 
 
+@Field static final Map RefreshIntervalOpts = [
+    defaultValueIdle: 10,
+    defaultValueHeating: 1,
+    options: [ 1: 'Every 1 Min', 5: 'Every 5 Mins', 10: 'Every 10 Mins', 15: 'Every 15 Mins', 59: 'Every Hour', 00: 'Disabled' ]
+]
