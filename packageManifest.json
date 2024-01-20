@@ -1,8 +1,8 @@
 {
   "packageName": "Stelpro Allia Zigbee Thermostat",
   "author": "Maxime Boissonneault",
-  "releaseNotes": "v1.1: Add configurable internal scheduled refresh operations to get power since these thermostats do not always report power change",
-  "version": "1.1",
+  "releaseNotes": "v1.1.1: fix refresh not happening after change of state, add offset so that thermostats don't all refresh in the same minute\nv1.1: Add configurable internal scheduled refresh operations to get power since these thermostats do not always report power change",
+  "version": "1.1.1",
   "minimumHEVersion": "2.3.4",
   "dateReleased": "2022-12-22",
   "licenseFile": "https://raw.githubusercontent.com/mboisson/Hubitat-Stelpro-Allia-Thermostat/main/LICENSE",

@@ -125,8 +125,8 @@ def parse(String description) {
                 final int interval = (settings.refreshScheduleIdle as Integer) ?: 0
                 if (interval > 0 && map.value != device.currentValue("thermostatOperatingState")) {
                     log.info "${device} scheduling refresh every ${interval} minutes"
-                    runIn(5, 'refresh')
                     scheduleRefresh(interval)
+                    runIn(5, 'refresh')
                 }
             }
             else {
@@ -134,8 +134,8 @@ def parse(String description) {
                 final int interval = (settings.refreshScheduleHeating as Integer) ?: 0
                 if (interval > 0 && map.value != device.currentValue("thermostatOperatingState")) {
                     log.info "${device} scheduling refresh every ${interval} minutes"
-                    runIn(5, 'refresh')
                     scheduleRefresh(interval)
+                    runIn(5, 'refresh')
                 }
             }
             sendEvent(name:"thermostatOperatingState", value:map.value)
@@ -197,8 +197,8 @@ def parse(String description) {
 private void scheduleRefresh(final int intervalMin) {
     final Random rnd = new Random()
     unschedule('refresh')
-    log.info "${rnd.nextInt(59)} */${intervalMin} * ? * * *"
-    schedule("${rnd.nextInt(59)} */${intervalMin} * ? * * *", 'refresh')
+    log.info "${rnd.nextInt(59)} ${rnd.nextInt(intervalMin)}-59/${intervalMin} * ? * * *"
+    schedule("${rnd.nextInt(59)} ${rnd.nextInt(intervalMin)}-59/${intervalMin} * ? * * *", 'refresh')
 }
 
 
@@ -208,7 +208,7 @@ def logsOff(){
 }
 
 def refresh() {
-    logDebug "refresh"
+    log.info("refresh")
     def cmds = []
     
     cmds += zigbee.readAttribute(0x201, 0x0000) //Read Local Temperature
