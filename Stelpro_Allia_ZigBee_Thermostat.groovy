@@ -27,6 +27,7 @@
  */
 
 import groovy.transform.Field
+import groovy.json.JsonOutput
 
 metadata {
     definition (name: "Stelpro Allia ZigBee Thermostat", namespace: "Mboisson", author: "Mboisson") {
@@ -46,6 +47,8 @@ metadata {
         attribute "temperature_display_mode", "string"
         attribute "keypad_lockout", "string"
         attribute "outdoor_temperature", "number"
+        attribute "supportedThermostatFanModes", "JSON_OBJECT"
+		attribute "supportedThermostatModes", "JSON_OBJECT"
         // 0x0000 (0): Basic
         // 0x0003 (3): Indentify
         // 0x000A (10):   Time
@@ -58,7 +61,7 @@ metadata {
         command "setOutdoorTemperature", [[name:"Temperature", type:"NUMBER"]]
         command "setThermostatMode", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["heat"]]]
         command "setThermostatOperatingState", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["heating","idle"]]]
-//        command "setThermostatFanMode", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["off"]]]
+        command "setThermostatFanMode", [[name:"Thermostat mode*","type":"ENUM","description":"Thermostat mode to set","constraints":["auto"]]]
 
         command "increaseHeatSetpoint"
         command "decreaseHeatSetpoint"
@@ -232,6 +235,18 @@ def logDebug(value){
     if (logEnable) log.debug(value)
 }
 
+def setSupportedThermostatFanModes(fanModes) {
+	logDebug "setSupportedThermostatFanModes(${fanModes}) was called"
+	// (auto, circulate, on)
+	sendEvent(name: "supportedThermostatFanModes", value: fanModes, descriptionText: getDescriptionText("supportedThermostatFanModes set to ${fanModes}"))
+}
+
+def setSupportedThermostatModes(modes) {
+	logDebug "setSupportedThermostatModes(${modes}) was called"
+	// (auto, cool, emergency heat, heat, off)
+	sendEvent(name: "supportedThermostatModes", value: modes, descriptionText: getDescriptionText("supportedThermostatModes set to ${modes}"))
+}
+
 def configure(){    
     log.warn "configure..."
     unschedule()
@@ -251,8 +266,8 @@ def configure(){
     sendEvent(name: "coolingSetpoint", value:getTemperature("0BB8")) // 0x0BB8 =  30 Celsius
     sendEvent(name: "thermostatFanMode", value:"auto")
     setThermostatMode("heat")
-    sendEvent(name: "supportedThermostatModes", value:"heat,idle")
-    sendEvent(name: "supportedThermostatFanModes", value:"")
+    setSupportedThermostatFanModes(JsonOutput.toJson(["auto"]))
+    setSupportedThermostatModes(JsonOutput.toJson(["heat"]))
     def cmds = [
     //bindings
         "zdo bind 0x${device.deviceNetworkId} 1 0x019 0x201 {${device.zigbeeId}} {}", "delay 200",
@@ -376,7 +391,7 @@ def increaseHeatSetpoint() {
 def decreaseHeatSetpoint() {
     def currentSetpoint = device.currentValue("heatingSetpoint")
     def locationScale = getTemperatureScale()
-    def maxSetpoint
+    def minSetpoint
     def step
 
     if (locationScale == "C") {
@@ -452,7 +467,11 @@ def setThermostatFanMode(mode) {
      sendEvent(name:"thermostatFanMode", "off")
 }
 
-
+private getDescriptionText(msg) {
+	def descriptionText = "${device.displayName} ${msg}"
+	if (settings?.txtEnable) log.info "${descriptionText}"
+	return descriptionText
+}
 
 @Field static final Map RefreshIntervalOpts = [
     defaultValueIdle: 10,
